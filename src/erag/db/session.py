@@ -1,5 +1,3 @@
-"""Request-scoped database sessions."""
-
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker

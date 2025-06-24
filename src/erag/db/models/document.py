@@ -1,5 +1,3 @@
-"""A document we have ingested."""
-
 import uuid
 from datetime import datetime
 
@@ -11,26 +9,20 @@ from erag.db.base import Base
 
 
 class Document(Base):
-    """One source document, before it is split into chunks."""
-
     __tablename__ = "documents"
 
-    # A document is identified by where it came from. Never store it twice.
     __table_args__ = (UniqueConstraint("source", "external_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
 
-    # Where it came from: confluence, jira, slack, filesystem.
     source: Mapped[str] = mapped_column(String(64), index=True)
 
-    # The id in that system, so we can find it again.
     external_id: Mapped[str] = mapped_column(String(512))
 
     title: Mapped[str] = mapped_column(String(1024))
 
-    # Hash of the content: if it changes, we re-index only this document.
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
 
     created_at: Mapped[datetime] = mapped_column(

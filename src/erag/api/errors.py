@@ -15,10 +15,18 @@ class ERagError(Exception):
 
 
 class DocumentNotFoundError(ERagError):
-    """Asked for a document that does not exist."""
-
     status_code = 404
     code = "document_not_found"
+
+
+class AuthenticationError(ERagError):
+    status_code = 401
+    code = "unauthenticated"
+
+
+class AuthorizationError(ERagError):
+    status_code = 403
+    code = "forbidden"
 
 
 def _request_id_header() -> dict[str, str]:
@@ -31,10 +39,15 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ERagError)
     async def _handled(_r: Request, exc: ERagError) -> JSONResponse:
 
+        headers = _request_id_header()
+
+        if exc.status_code == 401:
+            headers["WWW-Authenticate"] = 'Bearer realm="erag"'
+
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": {"code": exc.code, "message": exc.message}},
-            headers=_request_id_header(),
+            headers=headers,
         )
 
     @app.exception_handler(Exception)

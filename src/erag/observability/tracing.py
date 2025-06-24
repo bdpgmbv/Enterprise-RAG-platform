@@ -26,5 +26,4 @@ def configure_tracing(settings: Settings) -> None:
 
     trace.set_tracer_provider(provider)
 
-    # Flush anything still in memory when the process exits.
     atexit.register(provider.shutdown)

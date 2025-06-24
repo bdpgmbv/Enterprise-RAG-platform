@@ -38,17 +38,30 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: erag
-      POSTGRES_PASSWORD: erag
-      POSTGRES_DB: erag
+      POSTGRES_USER: erag_owner
+      POSTGRES_PASSWORD: erag_owner_pw
+      POSTGRES_DB: erag_db
     ports:
       - "5472:5432"
     volumes:
       - "postgres-data:/var/lib/postgresql/data"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erag"]
+      test: ["CMD-SHELL", "pg_isready -U erag_owner -d erag_db"]
       interval: 5s
       retries: 10
+  
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8095:8080"
+    volumes:
+      - "./docker/keycloak:/opt/keycloak/data/import:ro"
 
 volumes:
   tempo-data:

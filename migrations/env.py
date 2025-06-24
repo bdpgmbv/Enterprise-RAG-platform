@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -24,7 +25,9 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-config.set_main_option("sqlalchemy.url", get_settings().database.url)
+# Migrations run as the owner; the app runs as the restricted role.
+migration_url = os.getenv("ERAG_MIGRATION_DB_URL") or get_settings().database.url
+config.set_main_option("sqlalchemy.url", migration_url)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
