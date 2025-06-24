@@ -7,7 +7,10 @@ dependencies = [
     "fastapi>=0.115", 
     "uvicorn[standard]>=0.34",
     "pydantic-settings>=2.7",
-    "structlog>=25.1"
+    "structlog>=25.1",
+    "opentelemetry-sdk>=1.30",
+    "opentelemetry-instrumentation-fastapi>=0.51b0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.30",
 ]
 
 [dependency-groups]
@@ -22,3 +25,15 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/erag"]
+
+[tool.ruff]
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "N", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
