@@ -1,0 +1,55 @@
+# Local observability stack.
+name: erag-learn
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.118.0
+    command: ["--config=/etc/otel/config.yaml"]
+    ports:
+      - "4337:4317"
+    volumes:
+      - "./docker/otel/config.yaml:/etc/otel/config.yaml:ro"
+    depends_on: [tempo]
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.7.0
+    command: ["-config.file=/etc/tempo/config.yaml"]
+    ports:
+      - "3220:3200"
+    volumes:
+      - "./docker/tempo/config.yaml:/etc/tempo/config.yaml:ro"
+      - "tempo-data:/var/tempo"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    ports:
+      - "3020:3000"
+    volumes:
+      - "./docker/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro"
+    depends_on: [tempo]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: erag
+      POSTGRES_PASSWORD: erag
+      POSTGRES_DB: erag
+    ports:
+      - "5472:5432"
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erag"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  tempo-data:
+  postgres-data:

@@ -1,0 +1,8 @@
+# Preload Tempo so you don't click through setup screens.
+apiVersion: 1
+
+datasources:
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    url: http://tempo:3200
