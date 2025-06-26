@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import DateTime, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,6 +14,9 @@ class Document(Base):
     """One source document, before it is split into chunks."""
 
     __tablename__ = "documents"
+
+    # A document is identified by where it came from. Never store it twice.
+    __table_args__ = (UniqueConstraint("source", "external_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4

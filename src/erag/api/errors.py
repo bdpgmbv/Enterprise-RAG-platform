@@ -14,6 +14,13 @@ class ERagError(Exception):
         self.message = message
 
 
+class DocumentNotFoundError(ERagError):
+    """Asked for a document that does not exist."""
+
+    status_code = 404
+    code = "document_not_found"
+
+
 def _request_id_header() -> dict[str, str]:
     request_id = structlog.contextvars.get_contextvars().get("request_id")
     return {"X-Request-ID": str(request_id)} if request_id else {}
