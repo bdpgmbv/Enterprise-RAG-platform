@@ -2,16 +2,19 @@ import hashlib
 import uuid
 from collections.abc import Iterable
 
-from sqlalchemy import delete, exists, select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from erag.db.models.access_log import AccessLog
 from erag.db.models.document import Document
 from erag.db.models.document_acl import DocumentAcl
 
 
 def hash_content(content: str) -> str:
     return hashlib.sha256(content.encode()).hexdigest()
+
+
+async def get_by_id(session: AsyncSession, document_id: uuid.UUID) -> Document | None:
+    return await session.get(Document, document_id)
 
 
 async def get_by_external(
@@ -68,20 +71,6 @@ async def upsert(
     return existing, True
 
 
-async def get_readable(
-    session: AsyncSession, document_id: uuid.UUID, groups: Iterable[str]
-) -> Document | None:
-
-    allowed = exists().where(
-        DocumentAcl.document_id == Document.id,
-        DocumentAcl.group_name.in_(list(groups)),
-    )
-
-    stmt = select(Document).where(Document.id == document_id, allowed)
-
-    return (await session.execute(stmt)).scalar_one_or_none()
-
-
 async def set_acls(
     session: AsyncSession, document_id: uuid.UUID, groups: Iterable[str]
 ) -> None:
@@ -91,10 +80,3 @@ async def set_acls(
     session.add_all(
         DocumentAcl(document_id=document_id, group_name=g) for g in set(groups)
     )
-
-
-async def record_access(
-    session: AsyncSession, subject: str, document_id: uuid.UUID, allowed: bool
-) -> None:
-    session.add(AccessLog(subject=subject, document_id=document_id, allowed=allowed))
-    await session.commit()

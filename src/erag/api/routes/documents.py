@@ -5,7 +5,6 @@ import structlog
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from erag.api.dependencies.auth import AdminPrincipal, CurrentPrincipal
 from erag.api.errors import DocumentNotFoundError
 from erag.api.schemas.document import DocumentCreate, DocumentRead
 from erag.db.repositories import document as repo
@@ -23,7 +22,6 @@ async def create_document(
     body: DocumentCreate,
     response: Response,
     session: SessionDep,
-    principal: AdminPrincipal,
 ) -> DocumentRead:
 
     document, changed = await repo.upsert(
@@ -41,7 +39,6 @@ async def create_document(
         "document_upserted",
         document_id=str(document.id),
         changed=changed,
-        subject=principal.subject,
     )
 
     return DocumentRead.model_validate(document)
@@ -51,14 +48,9 @@ async def create_document(
 async def read_document(
     document_id: uuid.UUID,
     session: SessionDep,
-    principal: CurrentPrincipal,
 ) -> DocumentRead:
 
-    document = await repo.get_readable(session, document_id, principal.groups)
-
-    await repo.record_access(
-        session, principal.subject, document_id, allowed=document is not None
-    )
+    document = await repo.get_by_id(session, document_id)
 
     if document is None:
         raise DocumentNotFoundError(f"No document with id {document_id}")

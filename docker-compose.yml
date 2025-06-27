@@ -49,20 +49,21 @@ services:
       test: ["CMD-SHELL", "pg_isready -U erag_owner -d erag_db"]
       interval: 5s
       retries: 10
-  
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.1
+
+  vault:
+    image: hashicorp/vault:1.18
     restart: unless-stopped
-    command: ["start-dev", "--import-realm"]
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_HEALTH_ENABLED: "true"
+    command: ["vault", "server", "-config=/vault/config/vault.hcl"]
+    cap_add: ["IPC_LOCK"]
     ports:
-      - "8095:8080"
+      - "8200:8200"
     volumes:
-      - "./docker/keycloak:/opt/keycloak/data/import:ro"
+      - "./docker/vault:/vault/config:ro"
+      - "./docker/certs/erag-local-vault-server.crt:/vault/certs/erag-local-vault-server.crt:ro"
+      - "./docker/certs/erag-local-vault-server.key:/vault/certs/erag-local-vault-server.key:ro"
+      - "vault-data:/vault/file"
 
 volumes:
   tempo-data:
   postgres-data:
+  vault-data:

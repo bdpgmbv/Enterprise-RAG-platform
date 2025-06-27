@@ -3,4 +3,14 @@
 __pycache__/
 *.py[cod]
 .mypy_cache/
-.ruff_cache/
+.ruff_cache/docker/certs/*.key
+docker/certs/*.csr
+docker/certs/*.srl
+docker/certs/*.key
+docker/certs/*.csr
+docker/certs/*.srl
+vault-init.json
+docker/certs/*.key
+docker/certs/*.csr
+docker/certs/*.srl
+vault-init.json

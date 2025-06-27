@@ -1,0 +1,3 @@
+subjectAltName = DNS:localhost, DNS:vault, IP:127.0.0.1
+extendedKeyUsage = serverAuth
+keyUsage = critical, digitalSignature, keyEncipherment

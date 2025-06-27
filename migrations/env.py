@@ -3,6 +3,7 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -26,6 +27,8 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 # Migrations run as the owner; the app runs as the restricted role.
+
+load_dotenv()
 migration_url = os.getenv("ERAG_MIGRATION_DB_URL") or get_settings().database.url
 config.set_main_option("sqlalchemy.url", migration_url)
 

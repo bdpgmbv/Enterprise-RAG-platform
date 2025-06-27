@@ -19,16 +19,6 @@ class DocumentNotFoundError(ERagError):
     code = "document_not_found"
 
 
-class AuthenticationError(ERagError):
-    status_code = 401
-    code = "unauthenticated"
-
-
-class AuthorizationError(ERagError):
-    status_code = 403
-    code = "forbidden"
-
-
 def _request_id_header() -> dict[str, str]:
     request_id = structlog.contextvars.get_contextvars().get("request_id")
     return {"X-Request-ID": str(request_id)} if request_id else {}
@@ -39,15 +29,10 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ERagError)
     async def _handled(_r: Request, exc: ERagError) -> JSONResponse:
 
-        headers = _request_id_header()
-
-        if exc.status_code == 401:
-            headers["WWW-Authenticate"] = 'Bearer realm="erag"'
-
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": {"code": exc.code, "message": exc.message}},
-            headers=headers,
+            headers=_request_id_header(),
         )
 
     @app.exception_handler(Exception)

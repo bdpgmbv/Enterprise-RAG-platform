@@ -19,7 +19,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     configure_tracing(settings)
 
-    app = FastAPI(title=settings.service_name)
+    app = FastAPI(
+        title=settings.service_name,
+        docs_url="/docs" if settings.environment != "production" else None,
+        redoc_url=None,
+        openapi_url=("/openapi.json" if settings.environment != "production" else None),
+    )
     app.add_middleware(RequestContextMiddleware)
     register_error_handlers(app=app)
     app.include_router(health_router)
